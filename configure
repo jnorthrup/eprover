@@ -99,6 +99,9 @@ for argument in  "$@"; do
         arg=`echo "$argument"|cut -d= -f2-`
         if [ "$opt" = "--bindir" ] ; then
 		ARGS+=(EXECPATH=$arg)
+        elif [ "$argument" = "--enable-ho" ] ; then
+            enable_ho='             -DENABLE_LFHO \\'
+            build_ho='EHOH       = eprover-ho'
         elif [ "$opt" = "--exec-prefix" ] ; then 
 		ARGS+=(EXECPATH=$arg/bin ) 
         elif [ "$opt" = "--man-prefix" ] ; then
@@ -119,7 +122,14 @@ set -x
 for k in ${!ARGS[*]}
 do 
  	echo ${ARGS[$k]/=/ = }
-done >>Makefile.vars 
+done >>Makefile.vars
+sed -e "/^EXECPATH =.*/s|.*|EXECPATH = $EXECPATH|" \
+    -e "/^MANPATH =.*/s|.*|MANPATH = $MANPATH|" \
+    -e "/^.*DENABLE_LFHO/s|.*|$enable_ho|"  \
+    -e "/^EHOH/s|.*|$build_ho|" \
+    Makefile.vars > tmpfile
+mv tmpfile Makefile.vars
+
 
 make config
 set +x
